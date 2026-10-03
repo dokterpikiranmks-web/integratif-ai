@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { InteractiveNowCard } from '@/components/patient/interactive-now-card';
 import { SmartSwapCard } from '@/components/patient/smart-swap-card';
 import { AcupressureGuideModal } from '@/components/patient/acupressure-guide-modal';
@@ -19,7 +20,27 @@ import {
   Sparkles,
   ArrowRight,
   ShieldCheck,
+  AlertTriangle,
 } from 'lucide-react';
+
+function UnauthorizedAlert() {
+  const searchParams = useSearchParams();
+  const isUnauthorized = searchParams.get('error') === 'unauthorized';
+
+  if (!isUnauthorized) return null;
+
+  return (
+    <div className="p-4 rounded-2xl bg-amber-950/80 border border-amber-600/50 text-amber-200 text-xs flex items-start gap-3 shadow-lg shadow-amber-950/50">
+      <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+      <div>
+        <div className="font-bold text-amber-300">Akses Terproteksi RBAC (Triple-Lock Shield)</div>
+        <div className="mt-0.5 text-slate-300 leading-relaxed">
+          Anda dialihkan kembali ke Portal Pasien karena rute Ruang Praktisi hanya dapat diakses oleh akun praktisi/dokter terverifikasi. Rekam medis pasien lain terlindungi secara kriptografis.
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function PatientDashboardPage() {
   const todayStr = new Intl.DateTimeFormat('id-ID', {
@@ -28,6 +49,11 @@ export default function PatientDashboardPage() {
 
   return (
     <div className="container mx-auto max-w-2xl px-4 py-6 space-y-6">
+      {/* RBAC Security Shield Notice jika di-redirect dari rute praktisi */}
+      <Suspense fallback={null}>
+        <UnauthorizedAlert />
+      </Suspense>
+
       {/* Patient Greeting & Status Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-slate-900 to-emerald-950/60 border border-slate-800">
         <div className="flex items-center gap-3">
